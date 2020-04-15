@@ -1,0 +1,5 @@
+__pycache__
+finalproject.sqlite
+secrets.py
+google_books_cache.json
+wiki_cache.json
