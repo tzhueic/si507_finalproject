@@ -18,12 +18,12 @@ def get_google_books(search_term):
     Parameters
     ----------
     search_term: string
+        the search term inputted
 
-    
     Returns
     -------
     dict
-
+        results returned by API
     '''
     if search_term in CACHE_BOOK_DICT.keys():
         return CACHE_BOOK_DICT[search_term]
@@ -41,6 +41,21 @@ def get_google_books(search_term):
         return CACHE_BOOK_DICT[search_term]
 
 def create_book_record(record_dict, search_term):
+    '''Extract required information from the Google Books API results,
+    save as a list
+
+    Parameters
+    ----------
+    record_dict: dict
+        results returned by API
+    search_term: string
+        the search term inputted
+
+    Returns
+    -------
+    list
+        extracted information
+    '''
     record = []
     keyword = search_term
     #get title
@@ -81,24 +96,18 @@ def create_book_record(record_dict, search_term):
     return [title, subtitle, author, publishedDate, category, price, averageRating, ratingCount, keyword]
 
 
-def create_wikiresult_record(record_dict, search_term):
-    title = record_dict['title']
-    url = record_dict['fullurl']
-    searchTerm = search_term
-    return [title, url, searchTerm]
-
-
 def get_wiki_results(author):
     '''Obtain API data from Wikipedia API with use of cache
 
     Parameters
     ----------
     author: string
+        author's name
 
     Returns
     -------
     dict
-
+        results returned by API
     '''
     if author in CACHE_WIKI_DICT.keys():
         return CACHE_WIKI_DICT[author]
@@ -118,16 +127,39 @@ def get_wiki_results(author):
         return CACHE_WIKI_DICT[author]
 
 
-def build_inspired_titles_list():
-    ''' 
+def create_wikiresult_record(record_dict, search_term):
+    '''Extract required information from the Wikipedia API results,
+    save as a list
+
     Parameters
     ----------
-    None
+    record_dict: dict
+        results returned by API
+    search_term: string
+        the search term inputted
 
     Returns
     -------
-    dict
-        
+    list
+        extracted information
+    '''
+    title = record_dict['title']
+    url = record_dict['fullurl']
+    searchTerm = search_term
+    return [title, url, searchTerm]
+
+
+def build_inspired_titles_list():
+    '''Scrape the titles from the page
+
+    Parameters
+    ----------
+    none
+
+    Returns
+    -------
+    list
+        title of each book on the page
     '''
     title_list = []
     base_url = 'https://www.elle.com/culture/books/g29954140/best-books-2020/'
@@ -143,6 +175,17 @@ def build_inspired_titles_list():
 
 
 def create_database():
+    '''Create two tables in the database to store data
+    obtained from APIs
+
+    Parameters
+    ----------
+    none
+
+    Returns
+    -------
+    none
+    '''
     conn = sqlite3.connect("finalproject.sqlite")
     cur = conn.cursor()
 
@@ -184,6 +227,18 @@ def create_database():
 
 
 def insert_record_to_books(record_list):
+    '''Insert records retrieved from Google Books API
+    into the Books table in the database
+
+    Parameters
+    ----------
+    record_list: list
+        extracted information
+    
+    Returns
+    -------
+    none
+    '''
     conn = sqlite3.connect("finalproject.sqlite")
     cur = conn.cursor()
     insert_books = '''
@@ -195,6 +250,18 @@ def insert_record_to_books(record_list):
 
 
 def insert_record_to_wikiresults(record_list):
+    '''Insert records retrieved from Wikipedia API
+    into the WikiResults table in the database
+
+    Parameters
+    ----------
+    record_list: list
+        extracted information
+    
+    Returns
+    -------
+    none
+    '''
     conn = sqlite3.connect("finalproject.sqlite")
     cur = conn.cursor()
     insert_wikiresults = '''
@@ -238,9 +305,10 @@ def save_cache(cache_dict, cache_filename):
         The dictionary to save
     cache_filename: string
         The name of the cache file
+    
     Returns
     -------
-    None
+    none
     '''
     dumped_json_cache = json.dumps(cache_dict)
     fw = open(cache_filename,"w")
@@ -278,4 +346,3 @@ if __name__ == "__main__":
     for result in wiki_result['pages'].values():
         record = create_wikiresult_record(result, 'Stephen King')
         insert_record_to_wikiresults(record)
-
