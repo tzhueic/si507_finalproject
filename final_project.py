@@ -40,8 +40,9 @@ def get_google_books(search_term):
         save_cache(CACHE_BOOK_DICT, CACHE_BOOK_FILENAME)
         return CACHE_BOOK_DICT[search_term]
 
-def create_book_record(record_dict):
+def create_book_record(record_dict, search_term):
     record = []
+    keyword = search_term
     #get title
     title = record_dict['volumeInfo']['title']
     #get subtitle
@@ -70,14 +71,14 @@ def create_book_record(record_dict):
     try:
         averageRating = record_dict['volumeInfo']['averageRating']
     except:
-        averageRating = "NA"
+        averageRating = 0
     #get rating count
     try:
         ratingCount = record_dict['volumeInfo']['ratingsCount']
     except:
-        ratingCount = "NA"
+        ratingCount = 0
     
-    return [title, subtitle, author, publishedDate, category, price, averageRating, ratingCount]
+    return [title, subtitle, author, publishedDate, category, price, averageRating, ratingCount, keyword]
 
 
 def create_wikiresult_record(record_dict, search_term):
@@ -151,14 +152,15 @@ def create_database():
 
     create_books = '''
         CREATE TABLE IF NOT EXISTS "Books" (
-            "Title"     TEXT PRIMARY KEY,
-            "Subtitle"  TEXT NOT NULL,
-            "Author"    TEXT NOT NULL,
+            "Title"         TEXT PRIMARY KEY,
+            "Subtitle"      TEXT NOT NULL,
+            "Author"        TEXT NOT NULL,
             "PublishedDate" TEXT NOT NULL,
-            "Category" TEXT NOT NULL,
-            "Price"  TEXT NOT NULL,
-            "AverageRating"  TEXT NOT NULL,
-            "RatingCount" TEXT NOT NULL
+            "Category"      TEXT NOT NULL,
+            "Price"         TEXT NOT NULL,
+            "AverageRating" REAL NOT NULL,
+            "RatingCount"   INT NOT NULL,
+            "Keyword"       TEXT NOT NULL
         );
     '''
 
@@ -186,7 +188,7 @@ def insert_record_to_books(record_list):
     cur = conn.cursor()
     insert_books = '''
         INSERT INTO Books
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     '''
     cur.execute(insert_books, record_list)
     conn.commit()
@@ -266,7 +268,7 @@ if __name__ == "__main__":
 
     #test inserting book record to database
     for result in book_result['items']:
-        record = create_book_record(result)
+        record = create_book_record(result, 'magic')
         insert_record_to_books(record)
 
     #test cache for Wikipedia
