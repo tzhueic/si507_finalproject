@@ -4,6 +4,8 @@ import requests
 import json
 import secrets # file that contains API key
 import sqlite3
+import sys
+import plotly.graph_objs as go
 
 CACHE_BOOK_FILENAME = "google_books_cache.json"
 CACHE_BOOK_DICT = {}
@@ -11,7 +13,7 @@ CACHE_WIKI_FILENAME = "wiki_cache.json"
 CACHE_WIKI_DICT = {}
 INSPIRED_TITLE_LIST = []
 
-
+# FUNCTIONS
 def get_google_books(search_term):
     '''Obtain API data from Google Books API with use of cache
     
@@ -71,7 +73,10 @@ def create_book_record(record_dict, search_term):
     except:
         author = "No author"
     #get publish date
-    publishedDate = record_dict['volumeInfo']['publishedDate']
+    try:
+        publishedDate = record_dict['volumeInfo']['publishedDate']
+    except:
+        publishedDate = "NA"
     #get category
     try:
         category = record_dict['volumeInfo']['categories'][0]
@@ -195,7 +200,7 @@ def create_database():
 
     create_books = '''
         CREATE TABLE IF NOT EXISTS "Books" (
-            "Title"         TEXT PRIMARY KEY,
+            "Title"         TEXT NOT NULL,
             "Subtitle"      TEXT NOT NULL,
             "Author"        TEXT NOT NULL,
             "PublishedDate" TEXT NOT NULL,
@@ -203,7 +208,8 @@ def create_database():
             "Price"         TEXT NOT NULL,
             "AverageRating" REAL NOT NULL,
             "RatingCount"   INT NOT NULL,
-            "Keyword"       TEXT NOT NULL
+            "Keyword"       TEXT NOT NULL,
+            PRIMARY KEY (Title, PublishedDate)
         );
     '''
 
@@ -316,11 +322,306 @@ def save_cache(cache_dict, cache_filename):
     fw.close()
 
 
+def print_inspired_list():
+    '''Prints titles in INSPITED_TITLE_LIST as a numbered list
+
+    Parameters
+    ----------
+    none
+
+    Returns
+    -------
+    none
+    '''
+    i = 1
+    for title in INSPIRED_TITLE_LIST:
+        print(f"{i}. {title}")
+        i += 1
+
+
+def extract_book_from_database(user_input):
+    '''Extracts relevant records from the Books table in database
+
+    Parameters
+    ----------
+    user_input: string
+        the search term inputted
+    
+    Returns
+    -------
+    list
+        a list of tuples that contains the extracted records
+    '''
+    conn = sqlite3.connect("finalproject.sqlite")
+    cur = conn.cursor()
+    query = f'''
+    SELECT Title, Subtitle, Author, PublishedDate
+    FROM Books
+    WHERE Keyword = '{user_input}'
+    '''     
+    results = cur.execute(query).fetchall()
+    conn.close()
+    return results
+
+
+def display_book_results(results):
+    '''Displays results in the predefined format
+
+    Parameters
+    ----------
+    results: list
+        extracted records from the database
+    
+    Returns
+    -------
+    none
+    '''
+    i = 1
+    for book in results:
+        print(f"{i}. {book[0]}- {book[1]}:{book[2]} ({book[3]})", end='\n')
+        i += 1
+
+
+def extract_wikiresult_from_database(author):
+    '''Extracts relevant records from the WikiResults table in database
+
+    Parameters
+    ----------
+    author: string
+        the author's name
+    
+    Returns
+    -------
+    list
+        a list of tuples that contains the extracted records
+    '''
+    conn = sqlite3.connect("finalproject.sqlite")
+    cur = conn.cursor()
+    query = f'''
+    SELECT Title, Url
+    FROM WikiResults
+    WHERE SearchTerm = '{author}'
+    '''     
+    results = cur.execute(query).fetchall()
+    conn.close()
+    return results
+
+
+def display_wiki_results(results):
+    '''Displays results in the predefined format
+
+    Parameters
+    ----------
+    results: list
+        extracted records from the database
+    
+    Returns
+    -------
+    none
+    '''
+    max_title = 0
+    for result in results:
+        if len(result[0]) > max_title:
+            max_title = len(result[0])
+    print(f"{'Title':<{max_title+2}}{'URL':<}")
+    for result in results:    
+        print(f"{result[0]:<{max_title+2}}{result[1]:<}")
+
+
+def display_visualize_options():
+    '''Prints the visualization options menu
+
+    Parameters
+    ----------
+    none
+
+    Returns
+    -------
+    none
+    '''
+    print(f"*****")
+    print(f"1. Bar chart: results by category")
+    print(f"2. Scatter Plot: average rating and ratings count")
+    print(f"*****")
+
+
+def count_books_category(user_input):
+    '''Extracts categories and counts of relevant records
+    from the database
+
+    Parameters
+    ----------
+    user_input: string
+        the search term inputted
+        to filter relevant records from database
+
+    Returns
+    -------
+    list
+        a list of tuples that contains the extracted records
+    '''
+    conn = sqlite3.connect("finalproject.sqlite")
+    cur = conn.cursor()
+    query = f'''
+    SELECT Category, COUNT(*)
+    FROM Books
+    WHERE Keyword = '{user_input}'
+    GROUP BY Category
+    '''     
+    results = cur.execute(query).fetchall()
+    conn.close()
+    return results
+
+
+def plot_category_barchart(results):
+    '''Presents barplot that groups results by category
+
+    Parameters
+    ----------
+    results: list
+        extracted information from the database
+
+    Returns
+    -------
+    none
+    '''
+    xvals = []
+    yvals = []
+    
+    for result in results:
+        xvals.append(result[0])
+        yvals.append(result[1])
+
+    bar_data = go.Bar(x=xvals, y=yvals)
+    basic_layout = go.Layout(title="Book Search Results by Category")
+    fig = go.Figure(data=bar_data, layout=basic_layout)
+    fig.show()
+
+
+def get_ratings_info(user_input):
+    '''Extracts average ratings and rating counts 
+    of relevant records from the database
+
+    Parameters
+    ----------
+    user_input: string
+        the search term inputted
+        to filter relevant records from database
+
+    Returns
+    -------
+    list
+        a list of tuples that contains the extracted records
+    '''
+    conn = sqlite3.connect("finalproject.sqlite")
+    cur = conn.cursor()
+    query = f'''
+    SELECT AverageRating, RatingCount, Title
+    FROM Books
+    WHERE Keyword = '{user_input}'
+    '''     
+    results = cur.execute(query).fetchall()
+    conn.close()
+    return results
+
+
+def plot_rating_scatter(results):
+    '''Presents scatter plot for average ratings and rating counts
+
+    Parameters
+    ----------
+    results: list
+        extracted information from the database
+
+    Returns
+    -------
+    none
+    '''
+    xvals = []
+    yvals = []
+    hovertext = []
+    
+    for result in results:
+        xvals.append(result[0])
+        yvals.append(result[1])
+        hovertext.append(result[2])
+    
+    scatter_data = go.Scatter(
+        x=xvals, 
+        y=yvals,
+        hovertext = hovertext,
+        mode='markers')
+    basic_layout = go.Layout(
+        title="Average Rating and Rating Count",
+        xaxis_title="Average Rating",
+        yaxis_title="Rating Count")
+    fig = go.Figure(data=scatter_data, layout=basic_layout)
+    fig.show()
+
+
+def search_for_books(resp):
+    '''Conducts search through Google Books API,saves the 
+    results to database, extracts relevant records from the 
+    database, and displays the results in console
+
+    Parameters
+    ----------
+    resp: string
+        the search term inputted
+
+    Returns
+    -------
+    list
+        a list of tuples that contains the extracted records
+    '''
+    book_result = get_google_books(resp)
+    for result in book_result['items']:
+        record = create_book_record(result, resp)
+        insert_record_to_books(record)
+    book_results = extract_book_from_database(resp)
+    display_book_results(book_results)
+
+    return book_results
+
+
+def search_on_wiki(book_results, resp_wiki):
+    '''Conducts search through Wikipedia API,saves the results 
+    to database, extracts relevant records from the database, 
+    and displays the results in console
+
+    Parameters
+    ----------
+    book_results: list
+        extracted results of books information
+    resp_wiki: string
+        the selected author as search term
+    
+    Returns
+    -------
+    none
+    '''
+    author = book_results[int(resp_wiki)-1][2]
+    wiki_result = get_wiki_results(author)
+    for result in wiki_result['pages'].values():
+        record = create_wikiresult_record(result, author)
+        insert_record_to_wikiresults(record)
+    results = extract_wikiresult_from_database(author)
+    display_wiki_results(results) 
+
+
 def interactive_program():
-    pass
+    '''Allows a user to interactively input commands, present 
+    the results in the console, and visualize the results 
+    with different plots
 
+    Parameters
+    ----------
+    none
 
-if __name__ == "__main__":
+    Returns
+    -------
+    none
+    '''
     #load cache
     CACHE_BOOK_DICT = load_cache(CACHE_BOOK_FILENAME)
     CACHE_WIKI_DICT = load_cache(CACHE_WIKI_FILENAME)
@@ -331,18 +632,111 @@ if __name__ == "__main__":
     #Create tables in database
     create_database()
 
-    #test cache for Google Books
-    book_result = get_google_books('magic')
+    while True:
+        resp = input(f"Enter a search term, 'inspired' to get inspired by recommended books, or 'exit' to quit:")
+        if resp == 'inspired':
+            print_inspired_list()
+            resp_title = input(f"Enter a corresponding number to search with the title:")
+            try:
+                book_results = search_for_books(INSPIRED_TITLE_LIST[int(resp_title)-1])
+                while True:
+                    resp_plot = input(f"Do you want to visualize the results, enter 'yes' or 'no':")
+                    if resp_plot == 'yes':
+                        display_visualize_options()
+                        resp_plot = input(f"Which type of visualization do you want to choose, enter '1', '2', or 'no' to skip:")
+                        if resp_plot == '1':
+                            category_results = count_books_category(resp)
+                            plot_category_barchart(category_results)
+                        elif resp_plot == '2':
+                            rating_results = get_ratings_info(resp)
+                            plot_rating_scatter(rating_results)
+                        elif resp_plot == 'no':
+                            while True:
+                                resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                                if resp_wiki == 'exit':
+                                    sys.exit()
+                                elif resp_wiki == 'back':
+                                    break
+                                else:
+                                    try:
+                                        search_on_wiki(book_results, resp_wiki)
+                                    except:
+                                        print(f"Invalid Input. Enter an existing number.")
+                                        continue
+                        else:
+                            print(f"Invalid input. Enter '1', '2', or 'no'.")
+                            continue
+                    elif resp_plot == 'no':
+                        while True:
+                            resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                            if resp_wiki == 'exit':
+                                sys.exit()
+                            elif resp_wiki == 'back':
+                                break
+                            else:
+                                try:
+                                    search_on_wiki(book_results, resp_wiki) 
+                                except:
+                                    print(f"Invalid Input. Enter an existing number.")
+                                    continue
+                    else:
+                        print(f"Invalid input. Enter 'yes' or 'no'.")
+                        continue
+                    break
+            except:
+                print(f"Invalid Input. Enter an existing number.")
+                continue
+        elif resp == 'exit':
+            break
+        else:
+            book_results = search_for_books(resp)
+            while True:
+                resp_plot = input(f"Do you want to visualize the results, enter 'yes' or 'no':")
+                if resp_plot == 'yes':
+                    display_visualize_options()
+                    resp_plot = input(f"Which type of visualization do you want to choose, enter '1', '2', or 'no' to skip:")
+                    if resp_plot == '1':
+                        category_results = count_books_category(resp)
+                        plot_category_barchart(category_results)
+                    elif resp_plot == '2':
+                        rating_results = get_ratings_info(resp)
+                        plot_rating_scatter(rating_results)
+                    elif resp_plot == 'no':
+                        while True:
+                            resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                            if resp_wiki == 'exit':
+                                sys.exit()
+                            elif resp_wiki == 'back':
+                                break
+                            else:
+                                try:
+                                    search_on_wiki(book_results, resp_wiki)
+                                except:
+                                    print(f"Invalid Input. Enter an existing number.")
+                                    continue
+                    else:
+                        print(f"Invalid input. Enter '1', '2', or 'no'.")
+                        continue
+                elif resp_plot == 'no':
+                    while True:
+                        resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                        if resp_wiki == 'exit':
+                            sys.exit()
+                        elif resp_wiki == 'back':
+                            break
+                        else:
+                            try:
+                                search_on_wiki(book_results, resp_wiki) 
+                            except:
+                                print(f"Invalid Input. Enter an existing number.")
+                                continue
+                else:
+                    print(f"Invalid input. Enter 'yes' or 'no'.")
+                    continue
+                break
 
-    #test inserting book record to database
-    for result in book_result['items']:
-        record = create_book_record(result, 'magic')
-        insert_record_to_books(record)
 
-    #test cache for Wikipedia
-    wiki_result = get_wiki_results('Stephen King')
-
-    #test inserting wiki result record to database
-    for result in wiki_result['pages'].values():
-        record = create_wikiresult_record(result, 'Stephen King')
-        insert_record_to_wikiresults(record)
+# MAIN PROGRAM
+if __name__ == "__main__":
+    interactive_program()
+    
