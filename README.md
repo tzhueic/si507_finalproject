@@ -9,18 +9,22 @@ To run the program on your local machine, you will need to obtain set-ups mentio
 ### Special Requirements
 
 You need to obtain an API key for Google Books API on https://developers.google.com/books.<br>
-Save the key to an independent file called "secrets.py" in the same directory.
+Save the key to an independent file called "secrets.py" in the same directory where the program is saved.<br>
+<br>
+In this program, data collected from APIs will be stored to a database.<br>
+You also need to create a database called "finalproject.sqlite" in the same directory before running the program.
 
 ### Required Packages
 
 The program utilizes Beautiful Soup, requests, sqlite3, and plotly.<br>
-You will need to install the packages if they are not available on your local machine.
+You need to install the packages if they are not available on your local machine.
 
 ## Interaction Instruction
 
 You can run and interact with the program in the command line interface.
 
 ### Program Capabilities
+
 * Users will be asked to input a search term, this can be anything from a book’s name, a category, to other keywords. The program will return 25 related books information retrieved from Google Books.
 * For users with no specific terms in mind, they can choose to be inspired by the titles of the best books of 2020 recommended by Elle. The title of the 27 books will be printed in the command line. The program will use the title selected by the users as the search term and return 25 related books information retrieved from Google Books. 
 * To help the users visualize the results, users can choose to display the data in two ways:

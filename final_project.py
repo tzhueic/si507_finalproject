@@ -635,10 +635,10 @@ def interactive_program():
     create_database()
 
     while True:
-        resp = input(f"Enter a search term, 'inspired' to get inspired by recommended books, or 'exit' to quit:")
+        resp = input(f"\nEnter a search term, 'inspired' to get inspired by recommended books, or 'exit' to quit:")
         if resp == 'inspired':
             print_inspired_list()
-            resp_title = input(f"Enter a corresponding number to search with the title:")
+            resp_title = input(f"\nEnter a corresponding number to search with the title:")
             if int(resp_title) < 1:
                 print(f"Invalid input.")
                 continue
@@ -647,16 +647,16 @@ def interactive_program():
                     title = INSPIRED_TITLE_LIST[int(resp_title)-1]
                     book_results = search_for_books(title)
                     while True:
-                        resp_plot = input(f"Do you want to visualize the results, enter 'yes' or 'no':")
+                        resp_plot = input(f"\nDo you want to visualize the results, enter 'yes' or 'no':")
                         if resp_plot == 'yes':
                             display_visualize_options()
                             while True:
-                                resp_plot = input(f"Which type of visualization do you want to choose, enter '1', '2', or 'no' to skip:")
+                                resp_plot = input(f"\nWhich type of visualization do you want to choose, enter '1', '2', or 'no' to skip:")
                                 if resp_plot == '1':
                                     category_results = count_books_category(title)
                                     plot_category_barchart(category_results)
                                     while True:
-                                        resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                                        resp_wiki = input(f"\nEnter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
                                         if resp_wiki == 'exit':
                                             sys.exit()
                                         elif resp_wiki == 'back':
@@ -668,13 +668,13 @@ def interactive_program():
                                             try:
                                                 search_on_wiki(book_results, resp_wiki)
                                             except:
-                                                print(f"Invalid Input. Enter an existing number.")
+                                                print(f"Invalid Input or no search result. Enter another existing number.")
                                                 continue
                                 elif resp_plot == '2':
                                     rating_results = get_ratings_info(title)
                                     plot_rating_scatter(rating_results)
                                     while True:
-                                        resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                                        resp_wiki = input(f"\nEnter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
                                         if resp_wiki == 'exit':
                                             sys.exit()
                                         elif resp_wiki == 'back':
@@ -686,11 +686,11 @@ def interactive_program():
                                             try:
                                                 search_on_wiki(book_results, resp_wiki)
                                             except:
-                                                print(f"Invalid Input. Enter an existing number.")
+                                                print(f"Invalid Input or no search result. Enter another existing number.")
                                                 continue
                                 elif resp_plot == 'no':
                                     while True:
-                                        resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                                        resp_wiki = input(f"\nEnter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
                                         if resp_wiki == 'exit':
                                             sys.exit()
                                         elif resp_wiki == 'back':
@@ -702,7 +702,7 @@ def interactive_program():
                                             try:
                                                 search_on_wiki(book_results, resp_wiki)
                                             except:
-                                                print(f"Invalid Input. Enter an existing number.")
+                                                print(f"Invalid Input or no search result. Enter another existing number.")
                                                 continue
                                 else:
                                     print(f"Invalid input. Enter '1', '2', or 'no'.")
@@ -710,7 +710,7 @@ def interactive_program():
                                 break
                         elif resp_plot == 'no':
                             while True:
-                                resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                                resp_wiki = input(f"\nEnter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
                                 if resp_wiki == 'exit':
                                     sys.exit()
                                 elif resp_wiki == 'back':
@@ -722,7 +722,7 @@ def interactive_program():
                                     try:
                                         search_on_wiki(book_results, resp_wiki) 
                                     except:
-                                        print(f"Invalid Input. Enter an existing number.")
+                                        print(f"Invalid Input or no search result. Enter another existing number.")
                                         continue
                         else:
                             print(f"Invalid input. Enter 'yes' or 'no'.")
@@ -738,16 +738,16 @@ def interactive_program():
         else:
             book_results = search_for_books(resp)
             while True:
-                resp_plot = input(f"Do you want to visualize the results, enter 'yes' or 'no':")
+                resp_plot = input(f"\nDo you want to visualize the results, enter 'yes' or 'no':")
                 if resp_plot == 'yes':
                     display_visualize_options()
                     while True:
-                        resp_plot = input(f"Which type of visualization do you want to choose, enter '1', '2', or 'no' to skip:")
+                        resp_plot = input(f"\nWhich type of visualization do you want to choose, enter '1', '2', or 'no' to skip:")
                         if resp_plot == '1':
                             category_results = count_books_category(resp)
                             plot_category_barchart(category_results)
                             while True:
-                                resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                                resp_wiki = input(f"\nEnter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
                                 if resp_wiki == 'exit':
                                     sys.exit()
                                 elif resp_wiki == 'back':
@@ -759,13 +759,13 @@ def interactive_program():
                                     try:
                                         search_on_wiki(book_results, resp_wiki)
                                     except:
-                                        print(f"Invalid Input. Enter an existing number.")
+                                        print(f"Invalid Input or no search result. Enter another existing number.")
                                         continue
                         elif resp_plot == '2':
                             rating_results = get_ratings_info(resp)
                             plot_rating_scatter(rating_results)
                             while True:
-                                resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                                resp_wiki = input(f"\nEnter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
                                 if resp_wiki == 'exit':
                                     sys.exit()
                                 elif resp_wiki == 'back':
@@ -777,11 +777,11 @@ def interactive_program():
                                     try:
                                         search_on_wiki(book_results, resp_wiki)
                                     except:
-                                        print(f"Invalid Input. Enter an existing number.")
+                                        print(f"Invalid Input or no search result. Enter another existing number.")
                                         continue
                         elif resp_plot == 'no':
                             while True:
-                                resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                                resp_wiki = input(f"\nEnter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
                                 if resp_wiki == 'exit':
                                     sys.exit()
                                 elif resp_wiki == 'back':
@@ -793,7 +793,7 @@ def interactive_program():
                                     try:
                                         search_on_wiki(book_results, resp_wiki)
                                     except:
-                                        print(f"Invalid Input. Enter an existing number.")
+                                        print(f"Invalid Input or no search result. Enter another existing number.")
                                         continue
                         else:
                             print(f"Invalid input. Enter '1', '2', or 'no'.")
@@ -801,7 +801,7 @@ def interactive_program():
                         break
                 elif resp_plot == 'no':
                     while True:
-                        resp_wiki = input(f"Enter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
+                        resp_wiki = input(f"\nEnter a corresponding number to learn more about the author, 'back' for new search, or 'exit' to quit:")
                         if resp_wiki == 'exit':
                             sys.exit()
                         elif resp_wiki == 'back':
@@ -813,7 +813,7 @@ def interactive_program():
                             try:
                                 search_on_wiki(book_results, resp_wiki) 
                             except:
-                                print(f"Invalid Input. Enter an existing number.")
+                                print(f"Invalid Input or no search result. Enter another existing number.")
                                 continue
                 else:
                     print(f"Invalid input. Enter 'yes' or 'no'.")
