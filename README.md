@@ -32,6 +32,6 @@ You can run and interact with the program in the command line interface.
     * A scatter plot of the average rating and ratings count of each result.
 * If the users are interested in learning more about the author of a book, they can perform a search with the author’s name as the keyword. The top 10 relevant results on Wikipedia will be returned. The title and URL of the page will be presented in a table format in the console. Users can visit the corresponding Wikipedia page by clicking on the URL directly.
 
-## Authors
+## Author
 
 * **Melody Chang** - *Initial work* - [tzhueic](https://github.com/tzhueic)
